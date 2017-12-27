@@ -156,17 +156,35 @@ public:
 	virtual void HandleMethodCall(jsonrpc::Procedure& _proc, Json::Value const& _input, Json::Value& _output) override
 	{
 		auto pointer = m_methods.find(_proc.GetProcedureName());
-		if (pointer != m_methods.end())
-			(m_interface.get()->*(pointer->second))(_input, _output);
+        if (pointer != m_methods.end())
+        {
+            try
+            {
+                (m_interface.get()->*(pointer->second))(_input, _output);
+            }
+            catch (Json::Exception const& ex)
+            {
+                throw jsonrpc::JsonRpcException(jsonrpc::Errors::ERROR_RPC_INVALID_PARAMS, ex.what());
+            }
+        }
 		else
 			ModularServer<Is...>::HandleMethodCall(_proc, _input, _output);
 	}
 
-	virtual void HandleNotificationCall(jsonrpc::Procedure& _proc, Json::Value const& _input) override
-	{
-		auto pointer = m_notifications.find(_proc.GetProcedureName());
-		if (pointer != m_notifications.end())
-			(m_interface.get()->*(pointer->second))(_input);
+    virtual void HandleNotificationCall(jsonrpc::Procedure& _proc, Json::Value const& _input) override
+    {
+        auto pointer = m_notifications.find(_proc.GetProcedureName());
+        if (pointer != m_notifications.end())
+        {
+            try
+            {
+                (m_interface.get()->*(pointer->second))(_input);
+            }
+            catch (Json::Exception const& ex)
+            {
+                throw jsonrpc::JsonRpcException(jsonrpc::Errors::ERROR_RPC_INVALID_PARAMS, ex.what());
+            }
+        }
 		else
 			ModularServer<Is...>::HandleNotificationCall(_proc, _input);
 	}
